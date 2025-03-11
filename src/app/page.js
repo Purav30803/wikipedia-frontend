@@ -1,14 +1,16 @@
 'use client';
 import SearchBar from "@/components/Search";
 import api from "@/conf/api";
+import { Spin } from "antd";
 import { useState } from "react";
 
 export default function Home() {
-  const [searchText, setSearchText] = useState("");
+  const [loading, setLoading] = useState("");
   const [response, setResponse] = useState("");
   const [error,setError] = useState("");
 
   const predict = async (value) => {
+    setLoading(true);
     try {
       const res = await api.post("/wikipedia/search", { search: value });
       setResponse(res);
@@ -18,6 +20,7 @@ export default function Home() {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
+    setLoading(false);
   };
 
   return (
@@ -27,9 +30,9 @@ export default function Home() {
         <h1 className="text-2xl font-semibold text-gray-800 mb-12">Wikipedia Engagement Prediction</h1>
         <SearchBar predict={predict} />
         <p className="mt-4 text-lg font-medium text-gray-700">
-          {response && (response?.data?.search_results === "positive"
+          {loading? <Spin />:(response && (response?.data?.search_results === "positive"
             ? "🚀 This might go high!"
-            : response?.data?.search_results === "negative" ? "⚠️ It might not go high.":error || "SOMETHING WENT WRONG!")}
+            : response?.data?.search_results === "negative" ? "⚠️ It might not go high.":error || "SOMETHING WENT WRONG!"))}
         </p>
       </div>
     </div>
