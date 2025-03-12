@@ -11,7 +11,7 @@ const Footer = () => {
                 <p className="text-black font-semibold footer-title">Wikilytics</p>
                 </div>
                 <div className="flex items-center space-x-4">
-                <a href="https://wikipedia-backend-94sp.onrender.com/openapi.json" target='_blank' className="text-black hover:underline">API reference</a>
+                <a href="https://wikipedia-backend-94sp.onrender.com/docs" target='_blank' className="text-black hover:underline">API reference</a>
                 <a href="/reach-us" className="text-black hover:underline">Reach Us</a>
                 </div>
             </div>

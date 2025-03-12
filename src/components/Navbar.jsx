@@ -3,6 +3,12 @@ import { useState } from "react";
 
 function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState("home");
+
+    const handleClick = (tab) => () => {
+        alert(tab)
+        setActiveTab(tab);
+    };
 
     const toggleMobileMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -42,13 +48,13 @@ function Navbar() {
                         <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                             <div className="hidden sm:block">
                                 <div className="flex space-x-4">
-                                    <a href="#" className="rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform">
+                                    <a href="/home" className={`rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform ${activeTab == "home" ? "ring-2 bg-[#fff]":""}`} onClick={()=>handleClick("home")}>
                                         Home
                                     </a>
-                                    <a href="#" className="rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform">
+                                    <a href="/predict" className={`rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform ${activeTab == "prediction" ? "ring-2 bg-[#fff]":""}`} onClick={()=>handleClick("prediction")}>
                                         Prediction
                                     </a>
-                                    <a href="#" className="rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform">
+                                    <a href="#" className={`rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform ${activeTab == "compare" ? "ring-2 bg-[#fff]":""}`} onClick={()=>handleClick("compare")} >
                                         Compare
                                     </a>
                                     
