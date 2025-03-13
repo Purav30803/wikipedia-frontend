@@ -1,18 +1,32 @@
+'use client';
 import { CloseOutlined, FundOutlined, MenuOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState("home");
+    const [activeTab, setActiveTab] = useState("");
+    // get current path
+   
 
-    const handleClick = (tab) => () => {
-        alert(tab)
+    const handleClick = (tab) => {
         setActiveTab(tab);
     };
 
     const toggleMobileMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
     };
+
+    const currentPath = window.location.pathname;
+    useEffect(() => {
+        if(currentPath == "/home") {
+            setActiveTab("home");
+        } else if (currentPath == "/predict") {
+            setActiveTab("prediction");
+        } else if (currentPath == "/compare") {
+            setActiveTab("compare");
+        }
+    }
+    , [currentPath]);
 
     return (
         <>
@@ -24,7 +38,7 @@ function Navbar() {
                             <button
                                 type="button"
                                 onClick={toggleMobileMenu}
-                                className="inline-flex items-center justify-center rounded-md p-2 outline-none ring-2 focus:outline-none"
+                                className="inline-flex items-center justify-center button rounded-md ml-3 p-2 outline-none ring-2 focus:outline-none"
                                 aria-controls="mobile-menu"
                                 aria-expanded={isMobileMenuOpen ? "true" : "false"}
                             >
@@ -49,12 +63,12 @@ function Navbar() {
                             <div className="hidden sm:block">
                                 <div className="flex space-x-4">
                                     <a href="/home" className={`rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform ${activeTab == "home" ? "ring-2 bg-[#fff]":""}`} onClick={()=>handleClick("home")}>
-                                        Home
+                                        Home 
                                     </a>
                                     <a href="/predict" className={`rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform ${activeTab == "prediction" ? "ring-2 bg-[#fff]":""}`} onClick={()=>handleClick("prediction")}>
                                         Prediction
                                     </a>
-                                    <a href="#" className={`rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform ${activeTab == "compare" ? "ring-2 bg-[#fff]":""}`} onClick={()=>handleClick("compare")} >
+                                    <a href="/compare" className={`rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform ${activeTab == "compare" ? "ring-2 bg-[#fff]":""}`} onClick={()=>handleClick("compare")} >
                                         Compare
                                     </a>
                                     
@@ -68,20 +82,20 @@ function Navbar() {
                 <div className={`${isMobileMenuOpen ? "block" : "hidden"} sm:hidden`} id="mobile-menu">
                     <div className="space-y-1 px-2 pt-2 pb-3">
                         <a
-                            href="#"
+                            href="/home"
                             className="block rounded-md px-3 py-2 text-sm font-medium text-black"
                             aria-current="page"
                         >
                             Home
                         </a>
                         <a
-                            href="#"
+                            href="/predict"
                             className="block rounded-md px-3 py-2 text-sm font-medium text-black"
                         >
                             Prediction
                         </a>
                         <a
-                            href="#"
+                            href="/compare"
                             className="block rounded-md px-3 py-2 text-sm font-medium text-black"
                         >
                             Compare

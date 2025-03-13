@@ -9,7 +9,6 @@ import Footer from '@/components/Footer';
 export default function Home() {
   return (
     <>
-      <Navbar />
       <main className={`min-h-screen bg-white px-12 pt-16 lg:pt-0 md:pt-0 sm:pt-0 flex flex-col justify-center items-center md:px-32 sm:px-12 lg:px-32`}>
         <section className="w-full mt-16">
           <h1 className="text-4xl font-bold text-black">Welcome to Wikilytics</h1>
@@ -39,7 +38,6 @@ export default function Home() {
           </div>
         </section>
       </main>
-      <Footer />
     </>
   );
 }
@@ -55,13 +53,13 @@ const features = [
     title: 'Trending Articles',
     description: 'Stay updated with the latest trending articles on Wikipedia.',
     buttonText: 'Explore',
-    link: '/trending',
+    link: '/home',
   },
   {
     title: 'On This Day',
     description: "Discover historical events and birthdays with our 'On This Day' feature.",
     buttonText: 'Explore',
-    link: '/on-this-day',
+    link: '/home',
   },
   {
     title: 'Compare Articles',
