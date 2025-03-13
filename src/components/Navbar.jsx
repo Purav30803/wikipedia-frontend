@@ -6,7 +6,7 @@ function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("");
     // get current path
-   
+
 
     const handleClick = (tab) => {
         setActiveTab(tab);
@@ -16,9 +16,11 @@ function Navbar() {
         setIsMobileMenuOpen(!isMobileMenuOpen);
     };
 
-    const currentPath = window.location.pathname;
-    useEffect(() => {
-        if(currentPath == "/home") {
+    let currentPath = "";
+    if (typeof window !== "undefined") {
+        currentPath = window.location.pathname;
+    } useEffect(() => {
+        if (currentPath == "/home") {
             setActiveTab("home");
         } else if (currentPath == "/predict") {
             setActiveTab("prediction");
@@ -26,7 +28,7 @@ function Navbar() {
             setActiveTab("compare");
         }
     }
-    , [currentPath]);
+        , [currentPath]);
 
     return (
         <>
@@ -62,16 +64,16 @@ function Navbar() {
                         <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                             <div className="hidden sm:block">
                                 <div className="flex space-x-4">
-                                    <a href="/home" className={`rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform ${activeTab == "home" ? "ring-2 bg-[#fff]":""}`} onClick={()=>handleClick("home")}>
-                                        Home 
+                                    <a href="/home" className={`rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform ${activeTab == "home" ? "ring-2 bg-[#fff]" : ""}`} onClick={() => handleClick("home")}>
+                                        Home
                                     </a>
-                                    <a href="/predict" className={`rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform ${activeTab == "prediction" ? "ring-2 bg-[#fff]":""}`} onClick={()=>handleClick("prediction")}>
+                                    <a href="/predict" className={`rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform ${activeTab == "prediction" ? "ring-2 bg-[#fff]" : ""}`} onClick={() => handleClick("prediction")}>
                                         Prediction
                                     </a>
-                                    <a href="/compare" className={`rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform ${activeTab == "compare" ? "ring-2 bg-[#fff]":""}`} onClick={()=>handleClick("compare")} >
+                                    <a href="/compare" className={`rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform ${activeTab == "compare" ? "ring-2 bg-[#fff]" : ""}`} onClick={() => handleClick("compare")} >
                                         Compare
                                     </a>
-                                    
+
                                 </div>
                             </div>
                         </div>
