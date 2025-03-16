@@ -178,11 +178,11 @@ const Predict = () => {
                                                 />
                                                 <Tooltip 
                                                     contentStyle={{ 
-                                                        backgroundColor: 'var(--tooltip-bg, white)', 
-                                                        border: '1px solid var(--tooltip-border, #f0f0f0)',
+                                                        backgroundColor: 'var(#374151, white)', 
+                                                        border: '1px solid #f0f0f0',
                                                         borderRadius: '4px',
                                                         boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                                                        color: 'var(--tooltip-text, black)'
+                                                        color: 'black'
                                                     }}
                                                     formatter={(value) => [value, "Views"]}
                                                     labelFormatter={(label) => `${label}`}
@@ -210,24 +210,5 @@ const Predict = () => {
         </div>
     );
 };
-
-// Add this to configure tooltip colors for dark mode
-const style = document.createElement('style');
-style.textContent = `
-    :root {
-        --tooltip-bg: white;
-        --tooltip-border: #f0f0f0;
-        --tooltip-text: black;
-    }
-    
-    .dark {
-        --tooltip-bg: #374151;
-        --tooltip-border: #4B5563;
-        --tooltip-text: #F9FAFB;
-    }
-`;
-if (typeof document !== 'undefined') {
-    document.head.appendChild(style);
-}
 
 export default Predict;
