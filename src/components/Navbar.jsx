@@ -1,114 +1,160 @@
 'use client';
-import { CloseOutlined, FundOutlined, MenuOutlined } from "@ant-design/icons";
-import { useState, useEffect } from "react";
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Menu, X, BarChart2 } from 'lucide-react';
 
 function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState("");
-    // get current path
+    const [activeTab, setActiveTab] = useState('');
+    const [scrolled, setScrolled] = useState(false);
 
+    useEffect(() => {
+        // Get current path and set active tab
+        if (typeof window !== "undefined") {
+            const currentPath = window.location.pathname;
+            
+            if (currentPath === "/home") {
+                setActiveTab("home");
+            } else if (currentPath === "/predict") {
+                setActiveTab("prediction");
+            } else if (currentPath === "/compare") {
+                setActiveTab("compare");
+            } else if (currentPath === "/") {
+                setActiveTab("");
+            }
 
-    const handleClick = (tab) => {
-        setActiveTab(tab);
-    };
+            // Add scroll event listener
+            const handleScroll = () => {
+                if (window.scrollY > 20) {
+                    setScrolled(true);
+                } else {
+                    setScrolled(false);
+                }
+            };
+
+            window.addEventListener('scroll', handleScroll);
+            return () => window.removeEventListener('scroll', handleScroll);
+        }
+    }, []);
 
     const toggleMobileMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
     };
 
-    let currentPath = "";
-    if (typeof window !== "undefined") {
-        currentPath = window.location.pathname;
-    } useEffect(() => {
-        if (currentPath == "/home") {
-            setActiveTab("home");
-        } else if (currentPath == "/predict") {
-            setActiveTab("prediction");
-        } else if (currentPath == "/compare") {
-            setActiveTab("compare");
-        }
-    }
-        , [currentPath]);
+    const handleClick = (tab) => {
+        setActiveTab(tab);
+        setIsMobileMenuOpen(false);
+    };
 
     return (
-        <>
-            <nav className="bg-gray-200 fixed w-full border-b-2 border-black">
-                <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-                    <div className="relative flex h-16 items-center justify-between">
-                        {/* Mobile Menu Button */}
-                        <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
-                            <button
-                                type="button"
-                                onClick={toggleMobileMenu}
-                                className="inline-flex items-center justify-center button rounded-md ml-3 p-2 outline-none ring-2 focus:outline-none"
-                                aria-controls="mobile-menu"
-                                aria-expanded={isMobileMenuOpen ? "true" : "false"}
-                            >
-                                <span className="sr-only">Open main menu</span>
-                                {isMobileMenuOpen ? (
-                                    <CloseOutlined className="text-black" />
-                                ) : (
-                                    <MenuOutlined className="text-black" />
-                                )}
-                            </button>
-                        </div>
-
-                        {/* Brand */}
-                        <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                            <div className="flex shrink-0 items-center gap-x-4">
-                                <p className="text-xl font-bold text-black navbar-title">Wikilytics</p>
-                            </div>
-                        </div>
-
-                        {/* Desktop Menu */}
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                            <div className="hidden sm:block">
-                                <div className="flex space-x-4">
-                                    <a href="/home" className={`rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform ${activeTab == "home" ? "ring-2 bg-[#fff]" : ""}`} onClick={() => handleClick("home")}>
-                                        Home
-                                    </a>
-                                    <a href="/predict" className={`rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform ${activeTab == "prediction" ? "ring-2 bg-[#fff]" : ""}`} onClick={() => handleClick("prediction")}>
-                                        Prediction
-                                    </a>
-                                    <a href="/compare" className={`rounded-md text-[16px] px-3 py-2 text-sm hover:ring-2 hover:bg-[#fff] text-black transition-all duration-300 ease-in-out transform ${activeTab == "compare" ? "ring-2 bg-[#fff]" : ""}`} onClick={() => handleClick("compare")} >
-                                        Compare
-                                    </a>
-
-                                </div>
-                            </div>
-                        </div>
+        <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md' : 'bg-transparent'}`}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex justify-between h-16 items-center">
+                    {/* Logo */}
+                    <div className="flex items-center">
+                        <Link href="/" className="flex items-center" onClick={() => handleClick('home')}>
+                            <BarChart2 className="h-8 w-8 text-blue-600 mr-2" />
+                            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                                Wikilytics
+                            </span>
+                        </Link>
                     </div>
-                </div>
 
-                {/* Mobile Menu */}
-                <div className={`${isMobileMenuOpen ? "block" : "hidden"} sm:hidden`} id="mobile-menu">
-                    <div className="space-y-1 px-2 pt-2 pb-3">
-                        <a
-                            href="/home"
-                            className="block rounded-md px-3 py-2 text-sm font-medium text-black"
-                            aria-current="page"
+                    {/* Desktop Navigation */}
+                    <div className="hidden md:flex items-center space-x-1">
+                        <Link 
+                            href="/home" 
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                activeTab === "home" 
+                                ? "bg-blue-50 text-blue-700" 
+                                : "text-gray-700 hover:bg-gray-100"
+                            }`}
+                            onClick={() => handleClick("home")}
                         >
                             Home
-                        </a>
-                        <a
-                            href="/predict"
-                            className="block rounded-md px-3 py-2 text-sm font-medium text-black"
+                        </Link>
+                        <Link 
+                            href="/predict" 
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                activeTab === "prediction" 
+                                ? "bg-blue-50 text-blue-700" 
+                                : "text-gray-700 hover:bg-gray-100"
+                            }`}
+                            onClick={() => handleClick("prediction")}
                         >
                             Prediction
-                        </a>
-                        <a
-                            href="/compare"
-                            className="block rounded-md px-3 py-2 text-sm font-medium text-black"
+                        </Link>
+                        <Link 
+                            href="/compare" 
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                activeTab === "compare" 
+                                ? "bg-blue-50 text-blue-700" 
+                                : "text-gray-700 hover:bg-gray-100"
+                            }`}
+                            onClick={() => handleClick("compare")}
                         >
                             Compare
-                        </a>
+                        </Link>
+                    </div>
 
+                    {/* Mobile Menu Button */}
+                    <div className="md:hidden flex items-center">
+                        <button
+                            type="button"
+                            className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none"
+                            onClick={toggleMobileMenu}
+                        >
+                            <span className="sr-only">Open main menu</span>
+                            {isMobileMenuOpen ? (
+                                <X className="block h-6 w-6" aria-hidden="true" />
+                            ) : (
+                                <Menu className="block h-6 w-6" aria-hidden="true" />
+                            )}
+                        </button>
                     </div>
                 </div>
-            </nav>
+            </div>
 
-
-        </>
+            {/* Mobile Menu */}
+            <div className={`md:hidden ${isMobileMenuOpen ? 'block' : 'hidden'} bg-white shadow-lg`}>
+                <div className="px-2 pt-2 pb-3 space-y-1">
+                    <Link
+                        href="/home"
+                        className={`block px-3 py-2 rounded-md text-base font-medium ${
+                            activeTab === "home"
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                        onClick={() => handleClick("home")}
+                    >
+                        Home
+                    </Link>
+                    <Link
+                        href="/predict"
+                        className={`block px-3 py-2 rounded-md text-base font-medium ${
+                            activeTab === "prediction"
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                        onClick={() => handleClick("prediction")}
+                    >
+                        Prediction
+                    </Link>
+                    <Link
+                        href="/compare"
+                        className={`block px-3 py-2 rounded-md text-base font-medium ${
+                            activeTab === "compare"
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                        onClick={() => handleClick("compare")}
+                    >
+                        Compare
+                    </Link>
+                </div>
+            </div>
+        </nav>
     );
 }
 

@@ -28,14 +28,16 @@ export default function RootLayout({ children }) {
       </head>
 
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased `}
       >
         <Toaster />
         <NextTopLoader
           showSpinner={false}
         />
         <Navbar />
-        {children}
+        <div className="pt-16">
+          {children}
+        </div>
         <Footer />
       </body>
     </html>

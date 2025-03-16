@@ -1,11 +1,11 @@
 'use client';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+
 import React, { useState } from 'react';
 import api from '@/conf/api';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import Loader from '@/components/Loader';
-import {toast} from 'react-hot-toast'
+import { ArrowLeft, Search, AlertCircle, TrendingUp, Info } from 'lucide-react';
+import Link from 'next/link';
+import { toast } from 'react-hot-toast';
 
 const Predict = () => {
     const [search, setSearch] = useState('');
@@ -14,6 +14,7 @@ const Predict = () => {
     const [error, setError] = useState(null);
 
     const handleSubmit = async () => {
+        setError(null);
         setLoading(true);
         if (!search) {
             toast.error('Please enter a valid Wikipedia link');
@@ -23,7 +24,6 @@ const Predict = () => {
 
         try {
             const res = await api.post('/wikipedia/search', { search });
-            console.log(res.data);
             if(res?.data?.error){
                 setError(res.data.error);
                 setLoading(false);
@@ -33,88 +33,170 @@ const Predict = () => {
         } catch (error) {
             toast.error('An error occurred. Please try again later.');
             console.error(error);
-    
         }
         setLoading(false);
     };
 
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSubmit();
+        }
+    };
+
     return (
-        <div className="min-h-screen flex flex-col">
-            {/* <Navbar /> */}
-            <main className="flex-1 my-8 flex flex-col justify-center items-center px-4 sm:px-8 lg:px-16 bg-white">
-                <section className="w-full max-w-7xl mt-16 ring-2 p-6 sm:p-12 lg:p-16 rounded-md bg-gray-100">
-                    <h1 className="text-3xl sm:text-4xl font-bold text-black text-left">Predict Future Engagement of any Wikipedia Article</h1>
-                    <p className="text-gray-600 mt-4 text-left">
-                        Our models provide predictions for any Wikipedia article's future engagement.
-                    </p>
-                    <div className="w-full mt-8 flex flex-col sm:flex-row items-center">
-                        <input
-                            type="text"
-                            placeholder="Enter Wikipedia Link"
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="border-2 bg-white rounded-lg px-4 py-3 w-full sm:w-[70%] border-black outline-none"
-                        />
-                       {loading ?
-                       <div className='border-2 bg-gray-200 text-black hover:bg-gray-300 transition-colors border-black cursor-pointer rounded-lg px-6 py-3 mt-4 sm:mt-0 sm:ml-4 w-full sm:w-auto'>
+        <div className="min-h-screen bg-gray-50 text-black">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-8 px-6 md:px-16">
+                <div className="max-w-7xl mx-auto">
+                    <Link href="/" className="inline-flex items-center text-white mb-6 hover:underline">
+                        <ArrowLeft className="h-4 w-4 mr-2" /> Back to Home
+                    </Link>
+                    <h1 className="text-3xl md:text-4xl font-bold mb-3">Wikipedia Engagement Predictor</h1>
+                    <p className="text-lg opacity-90">Predict future engagement for any Wikipedia article</p>
+                </div>
+            </div>
 
-                       
-                       <Loader /></div>: <button
-                            className="border-2 bg-gray-200 text-black hover:bg-gray-300 transition-colors border-black cursor-pointer rounded-lg px-6 py-3 mt-4 sm:mt-0 sm:ml-4 w-full sm:w-auto"
-                            onClick={handleSubmit}
-                        >
-                            Predict
-                        </button>}
-                    </div>
-                    {error && (
-                        <div className='mt-8'>
-                            <h1 className='font-bold text-3xl text-red-400'>Error</h1>
-                            <p className='mt-3'>
-                                {error}
-                                </p>
+            <div className="max-w-7xl mx-auto px-6 md:px-8 py-8">
+                <div className="bg-white shadow-md rounded-lg p-6 md:p-8">
+                    <div className="mb-8">
+                        <h2 className="text-xl font-semibold mb-4">Enter Wikipedia Link</h2>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="relative flex-1">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Search className="h-5 w-5 text-gray-400" />
                                 </div>
-                                )}
-                    {(!error && prediction) && (
-                        <div className='pb-8'>
-                        <div className='py-8'>
-                            <h1 className='font-bold text-3xl'>Result</h1>
-                            <p className='mt-3'>
-                                Our model predicts that the Wikipedia article {prediction.title} will have <span className='font-bold'>{prediction.search_results === "positive" ? "High" : "Low"} </span>engagement in the future.
-                            </p>
+                                <input
+                                    type="text"
+                                    placeholder="Paste Wikipedia URL or article title"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    onKeyPress={handleKeyPress}
+                                    className="border border-gray-300 rounded-lg pl-10 pr-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                            </div>
+                            <button
+                                onClick={handleSubmit}
+                                disabled={loading}
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg px-6 py-3 transition-colors disabled:bg-blue-400 min-w-24"
+                            >
+                                {loading ? (
+                                    <div className="flex items-center justify-center">
+                                        <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                        </svg>
+                                        Predicting
+                                    </div>
+                                ) : "Predict"}
+                            </button>
                         </div>
-                        <div className="mt-8 text-left grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-y-8">
-                            <div>
-                            <h1 className='font-bold text-3xl pb-8'>Stats</h1>
+                    </div>
 
-                            <h1 className="text-xl sm:text-2xl font-bold text-black">{prediction.data.title}</h1>
-                            <div className="mt-4 space-y-2 text-black">
-                                <p>📝 Title Length: {prediction.data.title_length}</p>
-                                <p>📄 Article Length: {prediction.data.article_length} characters</p>
-                                <p>📂 Categories: {prediction.data.num_categories}</p>
-                                <p>🔗 Links: {prediction.data.num_links}</p>
-                                <p>📉 Zero Pageviews Days: {prediction.data.zero_pageviews_days}</p>
-                                <p>✏️ Recent Edit Days: {prediction.data.recent_edit_days}</p>
-                                <p>📊 Pageview Trend: {prediction.data.pageview_trend}</p>
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+                            <div className="flex items-center">
+                                <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+                                <h3 className="font-semibold text-red-600">Error</h3>
                             </div>
-                            </div>
-
-                            {/* Pageviews Graph */}
-                            <div className="w-full h-64 mt-3 lg:mt-16 md:mt-16 sm:mt-3">
-                                <h2 className="text-lg font-semibold text-black mb-2">Last 10 Days' Pageviews</h2>
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={prediction.data.pageviews?.map((pv, index) => ({ day: `Day ${index + 1}`, views: pv }))}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="day" />
-                                        <YAxis />
-                                        <Tooltip />
-                                        <Line type="monotone" dataKey="views" stroke="#8884d8" strokeWidth={2} />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div></div>
+                            <p className="text-gray-700 mt-2">{error}</p>
+                        </div>
                     )}
-                </section>
-            </main>
-            {/* <Footer /> */}
+
+                    {(!error && prediction) && (
+                        <div className="mt-8">
+                            <div className="bg-blue-50 border border-blue-100 rounded-lg p-6 mb-8">
+                                <div className="flex items-center">
+                                    <TrendingUp className={`h-6 w-6 mr-3 ${prediction.search_results === "positive" ? "text-green-500" : "text-amber-500"}`} />
+                                    <h2 className="text-2xl font-bold">Prediction Results</h2>
+                                </div>
+                                <p className="text-lg mt-3">
+                                    Our model predicts that the Wikipedia article <span className="font-semibold">{prediction.title}</span> will have 
+                                    <span className={`font-bold ${prediction.search_results === "positive" ? "text-green-600" : "text-amber-600"} ml-1`}>
+                                        {prediction.search_results === "positive" ? "High" : "Low"}
+                                    </span> engagement in the future.
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                <div className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
+                                    <h3 className="text-xl font-semibold mb-4 flex items-center">
+                                        <Info className="h-5 w-5 mr-2 text-blue-500" />
+                                        Article Statistics
+                                    </h3>
+                                    <h4 className="text-lg font-medium mb-4">{prediction.data.title}</h4>
+                                    <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+                                        <div className="bg-gray-50 p-3 rounded-md">
+                                            <p className="text-sm text-gray-500">Title Length</p>
+                                            <p className="text-lg font-medium">{prediction.data.title_length}</p>
+                                        </div>
+                                        <div className="bg-gray-50 p-3 rounded-md">
+                                            <p className="text-sm text-gray-500">Article Length</p>
+                                            <p className="text-lg font-medium">{prediction.data.article_length.toLocaleString()} chars</p>
+                                        </div>
+                                        <div className="bg-gray-50 p-3 rounded-md">
+                                            <p className="text-sm text-gray-500">Categories</p>
+                                            <p className="text-lg font-medium">{prediction.data.num_categories}</p>
+                                        </div>
+                                        <div className="bg-gray-50 p-3 rounded-md">
+                                            <p className="text-sm text-gray-500">Links</p>
+                                            <p className="text-lg font-medium">{prediction.data.num_links}</p>
+                                        </div>
+                                        <div className="bg-gray-50 p-3 rounded-md">
+                                            <p className="text-sm text-gray-500">Zero Pageviews Days</p>
+                                            <p className="text-lg font-medium">{prediction.data.zero_pageviews_days}</p>
+                                        </div>
+                                        <div className="bg-gray-50 p-3 rounded-md">
+                                            <p className="text-sm text-gray-500">Recent Edit Days</p>
+                                            <p className="text-lg font-medium">{prediction.data.recent_edit_days}</p>
+                                        </div>
+                                        <div className="bg-gray-50 p-3 rounded-md col-span-2">
+                                            <p className="text-sm text-gray-500">Pageview Trend</p>
+                                            <p className="text-lg font-medium">{prediction.data.pageview_trend}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white border border-gray-100 rounded-lg p-6 shadow-sm">
+                                    <h3 className="text-xl font-semibold mb-4">Recent Pageviews</h3>
+                                    <div className="h-64">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <LineChart 
+                                                data={prediction.data.pageviews?.map((pv, index) => ({ 
+                                                    day: `Day ${index + 1}`, 
+                                                    views: pv 
+                                                }))}
+                                                margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+                                            >
+                                                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                                                <XAxis dataKey="day" tick={{ fontSize: 12 }} />
+                                                <YAxis tick={{ fontSize: 12 }} />
+                                                <Tooltip 
+                                                    contentStyle={{ 
+                                                        backgroundColor: 'white', 
+                                                        border: '1px solid #f0f0f0',
+                                                        borderRadius: '4px',
+                                                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                                                    }} 
+                                                />
+                                                <Line 
+                                                    type="monotone" 
+                                                    dataKey="views" 
+                                                    stroke="#3b82f6" 
+                                                    strokeWidth={2}
+                                                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                                                    activeDot={{ fill: '#1d4ed8', r: 6 }}
+                                                />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                    <p className="text-sm text-gray-500 mt-4 text-center">
+                                        Pageview trends over the last 10 days
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 };
