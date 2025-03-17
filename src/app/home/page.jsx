@@ -19,6 +19,8 @@ const Home = () => {
           api.get('/wikipedia/top-trending')
         ]);
 
+        
+        console.log(trendingRes.data.length);
         setOnThisDay(onThisDayRes.data);
         setTrending(trendingRes.data);
       } catch (err) {
@@ -61,7 +63,7 @@ const Home = () => {
                 <h2 className="text-2xl font-bold dark:text-gray-100">On This Day</h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {onThisDay.slice(0, 4).map((event, index) => (
+                {onThisDay.slice(0, 4)?.map((event, index) => (
                   <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all hover:shadow-xl">
                     {event.image?.source && (
                       <div className="relative h-48 overflow-hidden">
@@ -92,6 +94,8 @@ const Home = () => {
             </section>
 
             {/* Trending Now Section */}
+            
+            {trending?.length != 10 && (
             <section>
               <div className="flex items-center mb-6">
                 <TrendingUp className="h-6 w-6 mr-2 text-blue-600 dark:text-blue-400" />
@@ -99,7 +103,7 @@ const Home = () => {
               </div>
               <div className="relative">
                 <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
-                  {trending.map((item, index) => (
+                  {trending?.map((item, index) => (
                     <div
                       key={index}
                       className="flex-shrink-0 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-xl transition-all"
@@ -123,6 +127,7 @@ const Home = () => {
                 </div>
               </div>
             </section>
+            )}
           </>
         )}
       </div>
