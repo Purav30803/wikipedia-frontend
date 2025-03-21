@@ -2,15 +2,16 @@
 
 import React, { useState } from 'react';
 import api from '@/conf/api';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ArrowLeft, Search, AlertCircle, TrendingUp, Info } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from 'recharts';
+import { ArrowLeft, Search, AlertCircle, TrendingUp, Info, Calendar } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 
 const Predict = () => {
     const [search, setSearch] = useState('');
     const [prediction, setPrediction] = useState(null);
-    const [loading, setLoading] = useState(false);  
+    const [engagementData, setEngagementData] = useState(null);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
     const handleSubmit = async () => {
@@ -23,13 +24,18 @@ const Predict = () => {
         }
 
         try {
-            const res = await api.post('/wikipedia/search', { search });
-            if(res?.data?.error){
-                setError(res.data.error);
+            // Get prediction data
+            const predictionRes = await api.post('/wikipedia/search', { search });
+            if (predictionRes?.data?.error) {
+                setError(predictionRes.data.error);
                 setLoading(false);
                 return;
             }
-            setPrediction(res.data);
+            setPrediction(predictionRes.data);
+
+            // Get engagement chart data
+            const engagementRes = await api.get(`/wikipedia/engagement-chart?wiki_url=${encodeURIComponent(search)}`);
+            setEngagementData(engagementRes.data);
         } catch (error) {
             toast.error('An error occurred. Please try again later.');
             console.error(error);
@@ -42,6 +48,38 @@ const Predict = () => {
             handleSubmit();
         }
     };
+
+    // Format chart data for display and sort by date
+    const formatChartData = () => {
+        if (!engagementData) return [];
+
+        const parseDate = (d) => new Date(d).getTime();
+
+        const pastData = engagementData.past.map(item => ({
+            date: item.date,
+            views: item.views,
+            short: false,
+            timestamp: parseDate(item.date),
+        }));
+
+        const futureData = engagementData.future.map(item => ({
+            date: item.date,
+            views: item.views,
+            short: true,
+            timestamp: parseDate(item.date),
+        }));
+
+        return [...pastData, ...futureData].sort((a, b) => a.timestamp - b.timestamp);
+    };
+
+    const getFutureDotColor = () => {
+        if (!engagementData || engagementData.future.length < 2) return '#10b981'; // default green
+        const first = engagementData.future[0].views;
+        const last = engagementData.future[engagementData.future.length - 1].views;
+        return last >= first ? '#10b981' : '#ef4444'; // green or red
+    };
+
+
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-black dark:text-white transition-colors duration-300">
@@ -109,7 +147,7 @@ const Predict = () => {
                                     <h2 className="text-2xl font-bold dark:text-gray-100">Prediction Results</h2>
                                 </div>
                                 <p className="text-lg mt-3 dark:text-gray-200">
-                                    Our model predicts that the Wikipedia article <span className="font-semibold">{prediction.title}</span> will have 
+                                    Our model predicts that the Wikipedia article <span className="font-semibold">{prediction.title}</span> will have
                                     <span className={`font-bold ${prediction.search_results === "positive" ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"} ml-1`}>
                                         {prediction.search_results === "positive" ? "High" : "Low"}
                                     </span> engagement in the future.
@@ -156,51 +194,101 @@ const Predict = () => {
                                 </div>
 
                                 <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-6 shadow-sm">
-                                    <h3 className="text-xl font-semibold mb-4 dark:text-gray-100">Recent Pageviews</h3>
-                                    <div className="h-64">
-                                        <ResponsiveContainer width="100%" height="100%">
-                                            <LineChart 
-                                                data={prediction.data.pageviews?.map((pv, index) => ({ 
-                                                    day: `Day ${index + 1}`, 
-                                                    views: pv 
-                                                }))}
-                                                margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-                                            >
-                                                <CartesianGrid strokeDasharray="3 3" opacity={0.3} stroke="#718096" />
-                                                <XAxis 
-                                                    dataKey="day" 
-                                                    tick={{ fontSize: 12 }} 
-                                                    stroke="#718096" 
-                                                />
-                                                <YAxis 
-                                                    tick={{ fontSize: 12 }} 
-                                                    stroke="#718096" 
-                                                />
-                                                <Tooltip 
-                                                    contentStyle={{ 
-                                                        backgroundColor: 'var(#374151, white)', 
-                                                        border: '1px solid #f0f0f0',
-                                                        borderRadius: '4px',
-                                                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                                                        color: 'black'
-                                                    }}
-                                                    formatter={(value) => [value, "Views"]}
-                                                    labelFormatter={(label) => `${label}`}
-                                                />
-                                                <Line 
-                                                    type="monotone" 
-                                                    dataKey="views" 
-                                                    stroke="#3b82f6" 
-                                                    strokeWidth={2}
-                                                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                                                    activeDot={{ fill: '#1d4ed8', r: 6 }}
-                                                />
-                                            </LineChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 text-center">
-                                        Pageview trends over the last 10 days
-                                    </p>
+                                    <h3 className="text-xl font-semibold mb-4 flex items-center dark:text-gray-100">
+                                        <Calendar className="h-5 w-5 mr-2 text-blue-500 dark:text-blue-400" />
+                                        Engagement Trends
+                                    </h3>
+                                    {engagementData && (
+                                        <>
+                                            <h4 className="text-lg font-medium mb-4 dark:text-gray-200">{engagementData.article}</h4>
+                                            <div className="h-64">
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <LineChart
+                                                        data={formatChartData()}
+                                                        margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+                                                    >
+                                                        <CartesianGrid strokeDasharray="3 3" opacity={0.3} stroke="#718096" />
+                                                        <XAxis
+                                                            dataKey="date"
+                                                            tick={{ fontSize: 12 }}
+                                                            stroke="#718096"
+                                                            angle={-30}
+                                                            textAnchor="end"
+                                                            height={50}
+                                                        />
+                                                        <YAxis
+                                                            tick={{ fontSize: 12 }}
+                                                            stroke="#718096"
+                                                        />
+                                                        <Tooltip
+                                                            contentStyle={{
+                                                                backgroundColor: document.documentElement.classList.contains('dark') ? '#374151' : 'white',
+                                                                border: '1px solid #f0f0f0',
+                                                                borderRadius: '4px',
+                                                                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                                                color: document.documentElement.classList.contains('dark') ? 'white' : 'black'
+                                                            }}
+                                                            formatter={(value) => [value.toLocaleString(), "Views"]}
+                                                            labelFormatter={(label) => `Date: ${label}`}
+                                                        />
+                                                        <Legend />
+                                                        <ReferenceLine
+                                                            x={engagementData.past[0]?.date}
+                                                            stroke="#f59e0b"
+                                                            strokeDasharray="3 3"
+                                                            label={{ value: 'Today', position: 'top', fill: '#f59e0b' }}
+                                                        />
+                                                        <Line
+                                                            type="monotone"
+                                                            dataKey="views"
+                                                            stroke="#3b82f6"
+                                                            strokeWidth={2}
+                                                            dot={(props) => {
+                                                                const { cx, cy, payload } = props;
+                                                                const futureColor = getFutureDotColor();
+                                                                const fillColor = payload.short ? futureColor : '#3b82f6';
+                                                                return (
+                                                                    <circle
+                                                                        cx={cx}
+                                                                        cy={cy}
+                                                                        r={4}
+                                                                        fill={fillColor}
+                                                                        strokeWidth={2}
+                                                                    />
+                                                                );
+                                                            }}
+                                                            activeDot={(props) => {
+                                                                const { cx, cy, payload } = props;
+                                                                const futureColor = getFutureDotColor();
+                                                                const fillColor = payload.short ? futureColor : '#1d4ed8';
+                                                                return (
+                                                                    <circle
+                                                                        cx={cx}
+                                                                        cy={cy}
+                                                                        r={6}
+                                                                        fill={fillColor}
+                                                                    />
+                                                                );
+                                                            }}
+                                                            name="Page Views"
+                                                        />
+
+                                                    </LineChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 text-center">
+                                                Past engagement and predicted future views
+                                            </p>
+                                            <div className="flex justify-between mt-3 text-sm">
+                                                <div className="text-gray-600 dark:text-gray-400">
+                                                    <span className="inline-block w-3 h-3 bg-blue-500 rounded-full mr-1"></span> Past data: {engagementData.past.length} days
+                                                </div>
+                                                <div className="text-gray-600 dark:text-gray-400">
+                                                    <span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-1"></span> Future prediction: {engagementData.future.length} days
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>
