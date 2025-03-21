@@ -3,12 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import api from '@/conf/api';
 import Link from 'next/link';
-import { ArrowRight, Loader2, TrendingUp, Calendar } from 'lucide-react';
+import { ArrowRight, Loader2, TrendingUp, Calendar, Shuffle } from 'lucide-react';
 
 const Home = () => {
   const [onThisDay, setOnThisDay] = useState([]);
   const [trending, setTrending] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [onThisDayLoading, setOnThisDayLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -19,8 +20,8 @@ const Home = () => {
           api.get('/wikipedia/top-trending')
         ]);
 
-        
-        console.log(trendingRes.data.length);
+
+        console.log(onThisDayRes.data[0]);
         setOnThisDay(onThisDayRes.data);
         setTrending(trendingRes.data);
       } catch (err) {
@@ -31,6 +32,22 @@ const Home = () => {
     };
     fetchData();
   }, []);
+
+  const changeOnThisDay = async () => {
+    setOnThisDayLoading(true);
+    try {
+
+      const onThisDayRes = await api.get('/wikipedia/on-this-day');
+      setOnThisDay(onThisDayRes.data);
+
+    }
+    catch (err) {
+      setError(err.message);
+    }
+    finally {
+      setOnThisDayLoading(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-black dark:text-white transition-colors duration-300">
@@ -58,11 +75,21 @@ const Home = () => {
           <>
             {/* On This Day Section */}
             <section className="mb-16">
-              <div className="flex items-center mb-6">
-                <Calendar className="h-6 w-6 mr-2 text-blue-600 dark:text-blue-400" />
-                <h2 className="text-2xl font-bold dark:text-gray-100">On This Day</h2>
+              <div className='flex w-full items-center justify-between'>
+                <div className="flex items-center mb-6">
+                  <Calendar className="h-6 w-6 mr-2 text-blue-600 dark:text-blue-400" />
+                  <h2 className="text-2xl font-bold dark:text-gray-100">On This Day</h2>
+                </div>
+                <button className="flex items-center mb-6 rounded-full bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-800 dark:to-indigo-900 px-5 py-2 shadow-sm" onClick={changeOnThisDay}>
+                  <Shuffle className="h-4 w-4 mr-1.5 text-white" />
+                  <span className="text-sm font-medium text-white">Shuffle</span>
+                </button>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {onThisDayLoading ? <>
+                <div className="flex justify-center items-center h-64">
+                  <Loader2 className="h-10 w-10 text-blue-600 dark:text-blue-400 animate-spin" />
+                </div>
+              </> : <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {onThisDay.slice(0, 4)?.map((event, index) => (
                   <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all hover:shadow-xl">
                     {event.image?.source && (
@@ -80,9 +107,9 @@ const Home = () => {
                     <div className="p-4">
                       <h3 className="text-lg font-bold line-clamp-2 dark:text-gray-100">{event.displayTitle}</h3>
                       <p className="text-gray-700 dark:text-gray-300 mt-2 line-clamp-3 text-sm">{event.text}</p>
-                      <Link 
-                        href={event.url} 
-                        target="_blank" 
+                      <Link
+                        href={event.url}
+                        target="_blank"
                         className="mt-3 inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                       >
                         Read more <ArrowRight className="ml-1 h-4 w-4" />
@@ -90,43 +117,43 @@ const Home = () => {
                     </div>
                   </div>
                 ))}
-              </div>
+              </div>}
             </section>
 
             {/* Trending Now Section */}
-            
+
             {trending?.length != 10 && (
-            <section>
-              <div className="flex items-center mb-6">
-                <TrendingUp className="h-6 w-6 mr-2 text-blue-600 dark:text-blue-400" />
-                <h2 className="text-2xl font-bold dark:text-gray-100">Trending Now</h2>
-              </div>
-              <div className="relative">
-                <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
-                  {trending?.map((item, index) => (
-                    <div
-                      key={index}
-                      className="flex-shrink-0 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-xl transition-all"
-                    >
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 text-xs font-semibold rounded-full px-2 py-1">
-                          #{item.rank}
-                        </span>
-                        <span className="text-gray-500 dark:text-gray-400 text-sm">{item.pageviews.toLocaleString()} views</span>
-                      </div>
-                      <h3 className="text-lg font-semibold truncate dark:text-gray-100">{item.title}</h3>
-                      <Link 
-                        href={item.article_url} 
-                        target="_blank" 
-                        className="mt-3 inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-                      >
-                        Read article <ArrowRight className="ml-1 h-4 w-4" />
-                      </Link>
-                    </div>
-                  ))}
+              <section>
+                <div className="flex items-center mb-6">
+                  <TrendingUp className="h-6 w-6 mr-2 text-blue-600 dark:text-blue-400" />
+                  <h2 className="text-2xl font-bold dark:text-gray-100">Trending Now</h2>
                 </div>
-              </div>
-            </section>
+                <div className="relative">
+                  <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
+                    {trending?.map((item, index) => (
+                      <div
+                        key={index}
+                        className="flex-shrink-0 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-xl transition-all"
+                      >
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 text-xs font-semibold rounded-full px-2 py-1">
+                            #{item.rank}
+                          </span>
+                          <span className="text-gray-500 dark:text-gray-400 text-sm">{item.pageviews.toLocaleString()} views</span>
+                        </div>
+                        <h3 className="text-lg font-semibold truncate dark:text-gray-100">{item.title}</h3>
+                        <Link
+                          href={item.article_url}
+                          target="_blank"
+                          className="mt-3 inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                        >
+                          Read article <ArrowRight className="ml-1 h-4 w-4" />
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
             )}
           </>
         )}
