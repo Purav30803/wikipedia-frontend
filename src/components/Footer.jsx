@@ -20,7 +20,7 @@ function Footer() {
                             API Reference
                         </a>
                         <a 
-                            href="/reach-us" 
+                            href="/contact" 
                             className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center"
                         >
                             <Mail className="h-4 w-4 mr-1" />

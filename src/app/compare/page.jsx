@@ -9,7 +9,8 @@ import {
 } from 'recharts';
 import {
     ArrowLeft, Search, AlertCircle, TrendingUp, Info,
-    RefreshCw, ArrowRightLeft, Calendar
+    RefreshCw, ArrowRightLeft, Calendar,
+    ChevronLeft
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
@@ -161,8 +162,8 @@ const Compare = () => {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-black dark:text-white transition-colors duration-300">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-800 dark:to-indigo-900 text-white py-8 px-6 md:px-16">
                 <div className="max-w-7xl mx-auto">
-                    <Link href="/" className="inline-flex items-center text-white mb-6 hover:underline">
-                        <ArrowLeft className="h-4 w-4 mr-2" /> Back to Home
+                    <Link href="/home" className="inline-flex items-center text-white mb-6 hover:underline">
+                        <ChevronLeft className="h-4 w-4 mr-2" /> Back to Home
                     </Link>
                     <h1 className="text-3xl md:text-4xl font-bold mb-3">Wikipedia Engagement Comparison</h1>
                     <p className="text-lg opacity-90">Compare future engagement predictions for any two Wikipedia articles</p>
