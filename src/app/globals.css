@@ -9,12 +9,11 @@ body{
 ::-webkit-scrollbar {
     width: 7px;
     height: 5px;
-    background: #212937;
   }
   
   /* Track */
   ::-webkit-scrollbar-track {
-    box-shadow: inset 0 0 5px #000;
+    box-shadow: inset 0 0 5px #eee;
     border-radius: 6px;
   }
   
