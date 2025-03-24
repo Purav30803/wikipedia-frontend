@@ -127,31 +127,31 @@ const Compare = () => {
     
         const allDatesMap = new Map();
     
-        [...engagementOne.past, ...engagementOne.future].forEach(item => {
-            allDatesMap.set(item.date, {
-                date: item.date, // keep original date
-                label: formatDate(item.date), // new: for display on the X-axis
-                [engagementOne.article]: item.views,
-                [engagementTwo.article]: 0
+        [...engagementOne?.past, ...engagementOne?.future].forEach(item => {
+            allDatesMap.set(item?.date, {
+                date: item?.date, // keep original date
+                label: formatDate(item?.date), // new: for display on the X-axis
+                [engagementOne?.article]: item?.views,
+                [engagementTwo?.article]: 0
             });
         });
     
-        [...engagementTwo.past, ...engagementTwo.future].forEach(item => {
-            if (allDatesMap.has(item.date)) {
-                const existing = allDatesMap.get(item.date);
-                existing[engagementTwo.article] = item.views;
+        [...engagementTwo?.past, ...engagementTwo?.future].forEach(item => {
+            if (allDatesMap.has(item?.date)) {
+                const existing = allDatesMap?.get(item?.date);
+                existing[engagementTwo?.article] = item?.views;
             } else {
-                allDatesMap.set(item.date, {
-                    date: item.date,
-                    label: formatDate(item.date),
-                    [engagementOne.article]: 0,
-                    [engagementTwo.article]: item.views
+                allDatesMap.set(item?.date, {
+                    date: item?.date,
+                    label: formatDate(item?.date),
+                    [engagementOne?.article]: 0,
+                    [engagementTwo?.article]: item?.views
                 });
             }
         });
     
-        return Array.from(allDatesMap.values())
-            .sort((a, b) => new Date(a.date) - new Date(b.date));
+        return Array.from(allDatesMap?.values())
+            .sort((a, b) => new Date(a?.date) - new Date(b?.date));
     };
     
     return (
