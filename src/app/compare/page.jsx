@@ -65,6 +65,16 @@ const Compare = () => {
         setError(null);
         setLoading(true);
 
+        if (!searchOne || !searchTwo) {
+            setError("Please enter both articles to compare.");
+            setLoading(false);
+            return;
+        }
+        if (searchOne === searchTwo) {
+            setError("Please enter two different articles to compare.");
+            setLoading(false);
+            return;
+        }
         const firstSuccess = await fetchPrediction(searchOne, setPredictionOne);
         const secondSuccess = await fetchPrediction(searchTwo, setPredictionTwo);
 
@@ -375,7 +385,7 @@ const Compare = () => {
                                                 <Legend />
 
                                                 <ReferenceLine
-                                                    x={engagementOne.past[0].date}
+                                                    x={engagementOne.future[0].date}
                                                     stroke="#f59e0b"
                                                     strokeDasharray="3 3"
                                                     label={{ value: 'Today', position: 'top', fill: '#f59e0b' }}
