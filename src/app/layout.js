@@ -22,6 +22,8 @@ export default function RootLayout({ children }) {
           href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
           rel="stylesheet"
         />
+        {/* favicon */}
+        <link rel="icon" href="/logo.svg" />
       </head>
       <body className="antialiased custom-cursor">
         <Toaster />
