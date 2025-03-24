@@ -66,7 +66,7 @@ function Navbar() {
                 <div className="flex justify-between h-16 items-center">
                     {/* Logo */}
                     <div className="flex items-center">
-                        <Link href="/" className="flex items-center" onClick={() => handleClick('home')}>
+                        <Link href="/home" className="flex items-center" onClick={() => handleClick('home')}>
                             <BarChart2 className="h-8 w-8 text-blue-600 mr-2" />
                             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-300 dark:to-indigo-300">
                                 Wikilytics
