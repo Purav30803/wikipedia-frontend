@@ -73,8 +73,43 @@ const Home = () => {
           </div>
         ) : (
           <>
+            {trending?.length != 10 && (
+              <section>
+                <div className="flex items-center mb-6">
+                  <TrendingUp className="h-6 w-6 mr-2 text-blue-600 dark:text-blue-400" />
+                  <h2 className="text-2xl font-bold dark:text-gray-100">Trending Now</h2>
+                </div>
+                <div className="relative">
+                  <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
+                    {trending?.map((item, index) => (
+                      index !== 4 &&
+                      <div
+                        key={index}
+                        className="flex-shrink-0 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-xl transition-all"
+                      >
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 text-xs font-semibold rounded-full px-2 py-1">
+                            #{item.rank}
+                          </span>
+                          <span className="text-gray-500 dark:text-gray-400 text-sm">{item.pageviews.toLocaleString()} views</span>
+                        </div>
+                        <h3 className="text-lg font-semibold truncate dark:text-gray-100">{item.title}</h3>
+                        <Link
+                          href={item.article_url}
+                          target="_blank"
+                          className="mt-3 inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                        >
+                          Read article <ArrowRight className="ml-1 h-4 w-4" />
+                        </Link>
+                      </div>
+                      
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
             {/* On This Day Section */}
-            <section className="mb-16">
+            <section className="mt-16">
               <div className='flex w-full items-center justify-between'>
                 <div className="flex items-center mb-6">
                   <Calendar className="h-6 w-6 mr-2 text-blue-600 dark:text-blue-400" />
@@ -112,7 +147,7 @@ const Home = () => {
                         target="_blank"
                         className="mt-3 inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                       >
-                        Read more <ArrowRight className="ml-1 h-4 w-4" />
+                        Read article <ArrowRight className="ml-1 h-4 w-4" />
                       </Link>
                     </div>
                   </div>
@@ -122,39 +157,8 @@ const Home = () => {
 
             {/* Trending Now Section */}
 
-            {trending?.length != 10 && (
-              <section>
-                <div className="flex items-center mb-6">
-                  <TrendingUp className="h-6 w-6 mr-2 text-blue-600 dark:text-blue-400" />
-                  <h2 className="text-2xl font-bold dark:text-gray-100">Trending Now</h2>
-                </div>
-                <div className="relative">
-                  <div className="flex overflow-x-auto space-x-4 pb-4 scrollbar-hide">
-                    {trending?.map((item, index) => (
-                      <div
-                        key={index}
-                        className="flex-shrink-0 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-xl transition-all"
-                      >
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 text-xs font-semibold rounded-full px-2 py-1">
-                            #{item.rank}
-                          </span>
-                          <span className="text-gray-500 dark:text-gray-400 text-sm">{item.pageviews.toLocaleString()} views</span>
-                        </div>
-                        <h3 className="text-lg font-semibold truncate dark:text-gray-100">{item.title}</h3>
-                        <Link
-                          href={item.article_url}
-                          target="_blank"
-                          className="mt-3 inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-                        >
-                          Read article <ArrowRight className="ml-1 h-4 w-4" />
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            )}
+
+
           </>
         )}
       </div>
