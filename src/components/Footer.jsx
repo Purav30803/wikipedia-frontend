@@ -11,7 +11,7 @@ function Footer() {
                     
                     <div className="flex items-center space-x-6">
                         <a 
-                            href="https://wikipedia-backend-94sp.onrender.com/docs" 
+                            href="https://wikipedia-backend-1.onrender.com/docs" 
                             target="_blank"
                             rel="noopener noreferrer" 
                             className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center"
