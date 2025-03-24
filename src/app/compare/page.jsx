@@ -25,7 +25,7 @@ const Compare = () => {
     const [error, setError] = useState(null);
 
     const fetchPrediction = async (search, setPrediction) => {
-       
+
 
         try {
             const res = await api.post('/wikipedia/search', { search });
@@ -94,6 +94,7 @@ const Compare = () => {
         setPredictionTwo(predictionOne);
         setEngagementOne(engagementTwo);
         setEngagementTwo(engagementOne);
+        getCombinedEngagementData();
     };
 
     const handleReset = () => {
@@ -123,10 +124,12 @@ const Compare = () => {
     };
 
     const getCombinedEngagementData = () => {
-        if (!engagementOne || !engagementTwo) return [];
-    
+        if (!engagementOne || !engagementTwo) {
+            return [];
+        }
+
         const allDatesMap = new Map();
-    
+
         [...engagementOne?.past, ...engagementOne?.future].forEach(item => {
             allDatesMap.set(item?.date, {
                 date: item?.date, // keep original date
@@ -135,7 +138,7 @@ const Compare = () => {
                 [engagementTwo?.article]: 0
             });
         });
-    
+
         [...engagementTwo?.past, ...engagementTwo?.future].forEach(item => {
             if (allDatesMap.has(item?.date)) {
                 const existing = allDatesMap?.get(item?.date);
@@ -149,11 +152,11 @@ const Compare = () => {
                 });
             }
         });
-    
+
         return Array.from(allDatesMap?.values())
             .sort((a, b) => new Date(a?.date) - new Date(b?.date));
     };
-    
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-black dark:text-white transition-colors duration-300">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-800 dark:to-indigo-900 text-white py-8 px-6 md:px-16">
