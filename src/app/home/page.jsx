@@ -157,7 +157,7 @@ const Home = () => {
                   <Calendar className="h-6 w-6 mr-2 text-blue-600 dark:text-blue-400" />
                   <h2 className="text-2xl font-bold dark:text-gray-100">On This Day</h2>
                 </div>
-                <button className="flex items-center mb-6 rounded-full bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-800 dark:to-indigo-900 px-5 py-2 shadow-sm" onClick={changeOnThisDay}>
+                <button disabled={onThisDayLoading} className="flex items-center mb-6 rounded-full bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-800 dark:to-indigo-900 px-5 py-2 shadow-sm" onClick={changeOnThisDay}>
                   <Shuffle className="h-4 w-4 mr-1.5 text-white" />
                   <span className="text-sm font-medium text-white">Shuffle</span>
                 </button>
