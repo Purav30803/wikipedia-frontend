@@ -1,9 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '@/conf/api';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { ArrowLeft, Search, AlertCircle, TrendingUp, Info, RefreshCw, ArrowRightLeft } from 'lucide-react';
+import {
+    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+    BarChart, Bar, Legend,
+    ReferenceLine
+} from 'recharts';
+import {
+    ArrowLeft, Search, AlertCircle, TrendingUp, Info,
+    RefreshCw, ArrowRightLeft, Calendar
+} from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 
@@ -12,14 +19,13 @@ const Compare = () => {
     const [searchTwo, setSearchTwo] = useState('');
     const [predictionOne, setPredictionOne] = useState(null);
     const [predictionTwo, setPredictionTwo] = useState(null);
+    const [engagementOne, setEngagementOne] = useState(null);
+    const [engagementTwo, setEngagementTwo] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
     const fetchPrediction = async (search, setPrediction) => {
-        if (!search) {
-            toast.error('Please enter a valid Wikipedia link');
-            return false;
-        }
+       
 
         try {
             const res = await api.post('/wikipedia/search', { search });
@@ -36,13 +42,31 @@ const Compare = () => {
         }
     };
 
+    const fetchEngagementData = async (searchInput, setEngagement) => {
+        if (!searchInput) return false;
+
+        const isFullUrl = searchInput.startsWith('http');
+        const fullUrl = isFullUrl
+            ? searchInput
+            : `https://en.wikipedia.org/wiki/${encodeURIComponent(searchInput)}`;
+
+        try {
+            const res = await api.get(`/wikipedia/engagement-chart?wiki_url=${searchInput}`);
+            setEngagement(res.data);
+            return true;
+        } catch (error) {
+            console.error('Failed to fetch engagement data:', error);
+            return false;
+        }
+    };
+
     const handleCompare = async () => {
         setError(null);
         setLoading(true);
-        
+
         const firstSuccess = await fetchPrediction(searchOne, setPredictionOne);
         const secondSuccess = await fetchPrediction(searchTwo, setPredictionTwo);
-        
+
         if (!firstSuccess && !secondSuccess) {
             setError("Both article searches failed. Please check your inputs and try again.");
         } else if (!firstSuccess) {
@@ -50,15 +74,26 @@ const Compare = () => {
         } else if (!secondSuccess) {
             setError("Failed to fetch the second article. Please check your input and try again.");
         }
-        
+
         setLoading(false);
     };
+
+    useEffect(() => {
+        if (predictionOne) {
+            fetchEngagementData(searchOne, setEngagementOne);
+        }
+        if (predictionTwo) {
+            fetchEngagementData(searchTwo, setEngagementTwo);
+        }
+    }, [predictionOne, predictionTwo]);
 
     const handleSwap = () => {
         setSearchOne(searchTwo);
         setSearchTwo(searchOne);
         setPredictionOne(predictionTwo);
         setPredictionTwo(predictionOne);
+        setEngagementOne(engagementTwo);
+        setEngagementTwo(engagementOne);
     };
 
     const handleReset = () => {
@@ -66,15 +101,15 @@ const Compare = () => {
         setSearchTwo('');
         setPredictionOne(null);
         setPredictionTwo(null);
+        setEngagementOne(null);
+        setEngagementTwo(null);
         setError(null);
     };
 
     const getComparisonData = () => {
         if (!predictionOne || !predictionTwo) return [];
-        
         return [
             { name: 'Title Length', article1: predictionOne.data.title_length, article2: predictionTwo.data.title_length },
-            // { name: 'Article Length', article1: predictionOne.data.article_length, article2: predictionTwo.data.article_length },
             { name: 'Categories', article1: predictionOne.data.num_categories, article2: predictionTwo.data.num_categories },
             { name: 'Links', article1: predictionOne.data.num_links, article2: predictionTwo.data.num_links },
             { name: 'Zero Pageviews Days', article1: predictionOne.data.zero_pageviews_days, article2: predictionTwo.data.zero_pageviews_days },
@@ -82,16 +117,43 @@ const Compare = () => {
         ];
     };
 
-    const getCombinedPageviewData = () => {
-        if (!predictionOne?.data?.pageviews || !predictionTwo?.data?.pageviews) return [];
-        
-        return Array(10).fill().map((_, index) => ({
-            day: `Day ${index + 1}`,
-            [predictionOne.title]: predictionOne.data.pageviews[index] || 0,
-            [predictionTwo.title]: predictionTwo.data.pageviews[index] || 0
-        }));
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
 
+    const getCombinedEngagementData = () => {
+        if (!engagementOne || !engagementTwo) return [];
+    
+        const allDatesMap = new Map();
+    
+        [...engagementOne.past, ...engagementOne.future].forEach(item => {
+            allDatesMap.set(item.date, {
+                date: item.date, // keep original date
+                label: formatDate(item.date), // new: for display on the X-axis
+                [engagementOne.article]: item.views,
+                [engagementTwo.article]: 0
+            });
+        });
+    
+        [...engagementTwo.past, ...engagementTwo.future].forEach(item => {
+            if (allDatesMap.has(item.date)) {
+                const existing = allDatesMap.get(item.date);
+                existing[engagementTwo.article] = item.views;
+            } else {
+                allDatesMap.set(item.date, {
+                    date: item.date,
+                    label: formatDate(item.date),
+                    [engagementOne.article]: 0,
+                    [engagementTwo.article]: item.views
+                });
+            }
+        });
+    
+        return Array.from(allDatesMap.values())
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+    };
+    
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-black dark:text-white transition-colors duration-300">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-700 dark:from-blue-800 dark:to-indigo-900 text-white py-8 px-6 md:px-16">
@@ -108,7 +170,7 @@ const Compare = () => {
                 <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 md:p-8">
                     <div className="mb-8">
                         <h2 className="text-xl font-semibold mb-4 dark:text-gray-100">Compare Two Wikipedia Articles</h2>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-4">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">First Article</label>
@@ -125,7 +187,7 @@ const Compare = () => {
                                     />
                                 </div>
                             </div>
-                            
+
                             <div className="space-y-4">
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Second Article</label>
                                 <div className="relative">
@@ -159,7 +221,7 @@ const Compare = () => {
                                     </div>
                                 ) : "Compare Articles"}
                             </button>
-                            
+
                             <button
                                 onClick={handleSwap}
                                 disabled={loading}
@@ -168,7 +230,7 @@ const Compare = () => {
                                 <ArrowRightLeft className="h-5 w-5 mr-2" />
                                 Swap
                             </button>
-                            
+
                             <button
                                 onClick={handleReset}
                                 disabled={loading}
@@ -201,7 +263,7 @@ const Compare = () => {
                                     </div>
                                     <h3 className="font-medium text-lg mt-3 dark:text-gray-200">{predictionOne.title}</h3>
                                     <p className="mt-2 dark:text-gray-300">
-                                        Predicted to have 
+                                        Predicted to have
                                         <span className={`font-bold ${predictionOne.search_results === "positive" ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"} ml-1`}>
                                             {predictionOne.search_results === "positive" ? "High" : "Low"}
                                         </span> future engagement.
@@ -218,7 +280,7 @@ const Compare = () => {
                                     </div>
                                     <h3 className="font-medium text-lg mt-3 dark:text-gray-200">{predictionTwo.title}</h3>
                                     <p className="mt-2 dark:text-gray-300">
-                                        Predicted to have 
+                                        Predicted to have
                                         <span className={`font-bold ${predictionTwo.search_results === "positive" ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"} ml-1`}>
                                             {predictionTwo.search_results === "positive" ? "High" : "Low"}
                                         </span> future engagement.
@@ -239,110 +301,123 @@ const Compare = () => {
                                             margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
                                         >
                                             <CartesianGrid strokeDasharray="3 3" opacity={0.3} stroke="#718096" />
-                                            <XAxis 
-                                                dataKey="name" 
-                                                tick={{ fontSize: 12 }} 
+                                            <XAxis
+                                                dataKey="name"
+                                                tick={{ fontSize: 12 }}
                                                 stroke="#718096"
                                                 angle={-45}
                                                 textAnchor="end"
                                                 height={70}
                                             />
                                             <YAxis tick={{ fontSize: 12 }} stroke="#718096" />
-                                            <Tooltip 
-                                                contentStyle={{ 
-                                                    backgroundColor: 'white', 
+                                            <Tooltip
+                                                contentStyle={{
+                                                    backgroundColor: 'white',
                                                     border: '1px solid #f0f0f0',
                                                     borderRadius: '4px',
                                                     boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                                                     color: 'black'
                                                 }}
                                             />
-                                            <Legend 
-                                                wrapperStyle={{ paddingTop: 10 }}
-                                                payload={[
-                                                    { value: predictionOne.title, type: 'rect', color: '#3b82f6' },
-                                                    { value: predictionTwo.title, type: 'rect', color: '#10b981' }
-                                                ]}
+                                            <Legend />
+
+                                            <Bar
+                                                dataKey="article1"
+                                                name={predictionOne.data.title}
+                                                fill="#3b82f6"
                                             />
-                                            <Bar 
-                                                dataKey="article1" 
-                                                name={predictionOne.title} 
-                                                fill="#3b82f6" 
-                                            />
-                                            <Bar 
-                                                dataKey="article2" 
-                                                name={predictionTwo.title} 
-                                                fill="#10b981" 
+                                            <Bar
+                                                dataKey="article2"
+                                                name={predictionTwo.data.title}
+                                                fill="#10b981"
                                             />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </div>
                             </div>
-                            
+
                             <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-6 shadow-sm">
-    <h3 className="text-xl font-semibold mb-6 dark:text-gray-100">Recent Pageviews Comparison</h3>
-    <div className="h-64">
-        {predictionOne && predictionTwo && (
-            <ResponsiveContainer width="100%" height="100%">
-                <LineChart 
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} stroke="#718096" />
-                    <XAxis 
-                        dataKey="day" 
-                        tick={{ fontSize: 12 }} 
-                        stroke="#718096"
-                        allowDuplicatedCategory={false}
-                    />
-                    <YAxis 
-                        tick={{ fontSize: 12 }} 
-                        stroke="#718096" 
-                    />
-                    <Tooltip 
-                        contentStyle={{ 
-                            backgroundColor: 'white', 
-                            border: '1px solid #f0f0f0',
-                            borderRadius: '4px',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                            color: 'black'
-                        }}
-                        formatter={(value) => [value, "Views"]}
-                    />
-                    <Legend />
-                    <Line 
-                        data={predictionOne.data.pageviews.map((value, index) => ({ day: `Day ${index + 1}`, views: value }))}
-                        type="monotone" 
-                        dataKey="views" 
-                        name={predictionOne.title}
-                        stroke="#3b82f6" 
-                        strokeWidth={2}
-                        dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
-                        activeDot={{ fill: '#1d4ed8', r: 6 }}
-                    />
-                    <Line 
-                        data={predictionTwo.data.pageviews.map((value, index) => ({ day: `Day ${index + 1}`, views: value }))}
-                        type="monotone" 
-                        dataKey="views" 
-                        name={predictionTwo.title}
-                        stroke="#10b981" 
-                        strokeWidth={2}
-                        dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
-                        activeDot={{ fill: '#059669', r: 6 }}
-                    />
-                </LineChart>
-            </ResponsiveContainer>
-        )}
-    </div>
-    <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 text-center">
-        Pageview trends over the last 10 days
-    </p>
-</div>
-                            
+                                <h3 className="text-xl font-semibold mb-6 dark:text-gray-100 flex items-center">
+                                    <Calendar className="h-5 w-5 mr-2 text-blue-500 dark:text-blue-400" />
+                                    Pageviews Engagement Chart
+                                </h3>
+                                <div className="h-80">
+                                    {engagementOne && engagementTwo && (
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <LineChart
+                                                data={getCombinedEngagementData()}
+                                                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                                            >
+                                                <CartesianGrid strokeDasharray="3 3" opacity={0.3} stroke="#718096" />
+                                                <XAxis
+                                                    dataKey="date"
+                                                    tick={{ fontSize: 12 }}
+                                                    stroke="#718096"
+                                                />
+                                                <YAxis
+                                                    tick={{ fontSize: 12 }}
+                                                    stroke="#718096"
+                                                />
+                                                <Tooltip
+                                                    contentStyle={{
+                                                        backgroundColor: 'white',
+                                                        border: '1px solid #f0f0f0',
+                                                        borderRadius: '4px',
+                                                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                                        color: 'black'
+                                                    }}
+                                                    formatter={(value) => [value, "Views"]}
+                                                />
+                                                <Legend />
+
+                                                <ReferenceLine
+                                                    x={engagementOne.past[0].date}
+                                                    stroke="#f59e0b"
+                                                    strokeDasharray="3 3"
+                                                    label={{ value: 'Today', position: 'top', fill: '#f59e0b' }}
+                                                />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey={engagementOne.article}
+                                                    stroke="#3b82f6"
+                                                    strokeWidth={2}
+                                                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                                                    activeDot={{ fill: '#1d4ed8', r: 6 }}
+                                                />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey={engagementTwo.article}
+                                                    stroke="#10b981"
+                                                    strokeWidth={2}
+                                                    dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                                                    activeDot={{ fill: '#059669', r: 6 }}
+                                                />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    )}
+                                    {!(engagementOne && engagementTwo) && (
+                                        <div className="flex items-center justify-center h-full">
+                                            <p className="text-gray-500 dark:text-gray-400">Loading engagement data...</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                                    <div className="flex items-start">
+                                        <Info className="h-5 w-5 text-blue-500 dark:text-blue-400 mt-0.5 mr-2 flex-shrink-0" />
+                                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                                            This chart shows past pageviews and predicted future views.
+                                            Past data represents actual views while future points are algorithmically predicted based on
+                                            trends, seasonality, and article characteristics.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-6 shadow-sm">
                                     <h3 className="text-xl font-semibold mb-4 flex items-center dark:text-gray-100">
                                         <Info className="h-5 w-5 mr-2 text-blue-500 dark:text-blue-400" />
-                                        {predictionOne.title}
+                                        {predictionOne.data.title}
                                     </h3>
                                     <div className="grid grid-cols-2 gap-y-4 gap-x-2">
                                         <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-md">
@@ -375,7 +450,7 @@ const Compare = () => {
                                 <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-6 shadow-sm">
                                     <h3 className="text-xl font-semibold mb-4 flex items-center dark:text-gray-100">
                                         <Info className="h-5 w-5 mr-2 text-green-500 dark:text-green-400" />
-                                        {predictionTwo.title}
+                                        {predictionTwo.data.title}
                                     </h3>
                                     <div className="grid grid-cols-2 gap-y-4 gap-x-2">
                                         <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-md">
