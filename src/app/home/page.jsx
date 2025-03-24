@@ -3,7 +3,18 @@
 import React, { useEffect, useState } from 'react';
 import api from '@/conf/api';
 import Link from 'next/link';
-import { ArrowRight, Loader2, TrendingUp, Calendar, Shuffle } from 'lucide-react';
+import { ArrowRight, Loader2, TrendingUp, Calendar, Shuffle, FileText, Eye, X, TreePalm, TreeDeciduous } from 'lucide-react';
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  Legend,
+} from 'recharts';
+
 
 const Home = () => {
   const [onThisDay, setOnThisDay] = useState([]);
@@ -11,6 +22,11 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [onThisDayLoading, setOnThisDayLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalData, setModalData] = useState(null);
+  const [modalError, setModalError] = useState(null);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,7 +37,6 @@ const Home = () => {
         ]);
 
 
-        console.log(onThisDayRes.data[0]);
         setOnThisDay(onThisDayRes.data);
         setTrending(trendingRes.data);
       } catch (err) {
@@ -32,6 +47,22 @@ const Home = () => {
     };
     fetchData();
   }, []);
+
+  const handleViewStats = async (url) => {
+    setModalLoading(true);
+    setModalError(null);
+    setModalOpen(true);
+
+    try {
+      const response = await api.post('/wikipedia/search', { search: url });
+      setModalData(response.data);
+    } catch (err) {
+      setModalError('Failed to fetch stats.');
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
 
   const changeOnThisDay = async () => {
     setOnThisDayLoading(true);
@@ -48,6 +79,7 @@ const Home = () => {
       setOnThisDayLoading(false);
     }
   }
+
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-black dark:text-white transition-colors duration-300">
@@ -94,15 +126,25 @@ const Home = () => {
                           <span className="text-gray-500 dark:text-gray-400 text-sm">{item.pageviews.toLocaleString()} views</span>
                         </div>
                         <h3 className="text-lg font-semibold truncate dark:text-gray-100">{item.title}</h3>
-                        <Link
-                          href={item.article_url}
-                          target="_blank"
-                          className="mt-3 inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-                        >
-                          Read article <ArrowRight className="ml-1 h-4 w-4" />
-                        </Link>
+                        <div className='flex justify-between items-center mt-4'>
+
+                          <Link
+                            href={item.article_url}
+                            target="_blank"
+                            className="mt-3 inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                          >
+                            Read article <ArrowRight className="ml-1 h-4 w-4" />
+                          </Link>
+                          <button
+                            onClick={() => handleViewStats(item.article_url)}
+                            className="mt-2 bg-blue-100 text-blue-800 inline-flex items-center ring ring-blue-500 ring-1 hover:bg-blue-400 hover:text-white dark:hover:bg-blue-500 dark:hover:text-white rounded-md dark:bg-[rgba(0,0,0,0.2)] px-3 py-2 text-sm font-medium dark:text-blue-200"
+                          >
+                            View Stats
+                          </button>
+                        </div>
+
                       </div>
-                      
+
                     ))}
                   </div>
                 </div>
@@ -162,7 +204,147 @@ const Home = () => {
           </>
         )}
       </div>
+      {modalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-5xl shadow-xl p-4 sm:p-6 relative">
+            <button
+              onClick={() => {
+                setModalOpen(false);
+                setModalData(null);
+              }}
+              className="absolute top-3 right-4 text-gray-500 hover:text-black text-xl dark:hover:text-white"
+            >
+              <X className="mt-1" />
+            </button>
+
+            {modalLoading ? (
+              <div className="flex justify-center items-center h-40">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600 dark:text-blue-400" />
+              </div>
+            ) : modalError ? (
+              <p className="text-red-500 text-center">{modalError}</p>
+            ) : modalData ? (
+              <div className="rounded-lg space-y-6">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center">
+                  <FileText className="mr-2" size={24} />
+                  {modalData?.data?.title}
+                </h2>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Content Metrics */}
+                  <div className="bg-blue-50 dark:bg-gray-800 p-4 rounded-lg">
+                    <div className="flex items-center text-blue-600 dark:text-blue-400 mb-2">
+                      <FileText className="mr-2" size={16} />
+                      <h3 className="font-semibold">Content Metrics</h3>
+                    </div>
+                    <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                      <p className="flex justify-between">
+                        <span>Title Length:</span>
+                        <span className="font-medium">{modalData?.data?.title_length}</span>
+                      </p>
+                      <p className="flex justify-between">
+                        <span>Article Length:</span>
+                        <span className="font-medium">
+                          {modalData?.data?.article_length?.toLocaleString()} chars
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Classification */}
+                  <div className="bg-purple-50 dark:bg-gray-800 p-4 rounded-lg">
+                    <div className="flex items-center text-purple-600 dark:text-purple-400 mb-2">
+                      <TreeDeciduous className="mr-2" size={16} />
+                      <h3 className="font-semibold">Classification</h3>
+                    </div>
+                    <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                      <p className="flex justify-between">
+                        <span>Categories:</span>
+                        <span className="font-medium">{modalData?.data.num_categories}</span>
+                      </p>
+                      <p className="flex justify-between">
+                        <span>Links:</span>
+                        <span className="font-medium">{modalData?.data.num_links}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Activity Stats */}
+                  <div className="bg-amber-50 dark:bg-gray-800 p-4 rounded-lg">
+                    <div className="flex items-center text-amber-600 dark:text-amber-400 mb-2">
+                      <Calendar className="mr-2" size={16} />
+                      <h3 className="font-semibold">Activity Stats</h3>
+                    </div>
+                    <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                      <p className="flex justify-between">
+                        <span>Zero Pageview Days:</span>
+                        <span className="font-medium">{modalData?.data?.zero_pageviews_days}</span>
+                      </p>
+                      <p className="flex justify-between">
+                        <span>Recent Edit Days:</span>
+                        <span className="font-medium">{modalData?.data?.recent_edit_days}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Graph */}
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                  <div className="flex items-center text-gray-700 dark:text-gray-300 mb-4">
+                    <Eye className="mr-2" size={18} />
+                    <h3 className="font-semibold text-lg">Pageview Trends</h3>
+                  </div>
+                  <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={modalData.data.pageviews.map((v, i) => ({
+                          day: `Day ${i + 1}`,
+                          views: v,
+                        }))}
+                        margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#d1d5db" />
+                        <XAxis
+                          dataKey="day"
+                          tick={{ fill: '#6b7280' }}
+                          axisLine={{ stroke: '#9ca3af' }}
+                        />
+                        <YAxis
+                          tick={{ fill: '#6b7280' }}
+                          axisLine={{ stroke: '#9ca3af' }}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: '#f9fafb',
+                            borderColor: '#e5e7eb',
+                            borderRadius: '0.375rem',
+                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                          }}
+                        />
+                        <Legend iconType="circle" />
+                        <Line
+                          type="monotone"
+                          dataKey="views"
+                          name="Page Views"
+                          stroke="#3b82f6"
+                          strokeWidth={3}
+                          dot={{ r: 4, strokeWidth: 2 }}
+                          activeDot={{ r: 6, stroke: '#2563eb', strokeWidth: 2 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
+
+
     </div>
+
   );
 };
 

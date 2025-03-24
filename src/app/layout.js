@@ -30,7 +30,7 @@ export default function RootLayout({ children }) {
         <NextTopLoader showSpinner={false} />
         <Navbar />
         <div className="pt-16">
-          <CustomCursor /> {/* ⬅ Add this here */}
+          {/* <CustomCursor /> ⬅ Add this here */}
           {children}
         </div>
         <Footer />
