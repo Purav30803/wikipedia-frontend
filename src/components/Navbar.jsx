@@ -61,7 +61,7 @@ function Navbar() {
     };
 
     return (
-        <nav className={`fixed w-full z-50 transition-all dark:bg-black duration-300 ${scrolled ? 'bg-white shadow-md dark:bg-black' : 'bg-transparent'}`}>
+        <nav className={`fixed w-full z-50 transition-all dark:bg-gray-900 duration-300 ${scrolled ? 'bg-white shadow-md dark:bg-gray-900' : 'bg-transparent'}`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-16 items-center">
                     {/* Logo */}
@@ -142,7 +142,7 @@ function Navbar() {
             </div>
 
             {/* Mobile Menu */}
-            <div className={`md:hidden ${isMobileMenuOpen ? 'block' : 'hidden'} bg-white shadow-lg dark:bg-black`}>
+            <div className={`md:hidden ${isMobileMenuOpen ? 'block' : 'hidden'} bg-white shadow-lg  dark:bg-gray-900`}>
                 <div className="px-2 pt-2 pb-3 space-y-1">
                     <Link
                         href="/home"
