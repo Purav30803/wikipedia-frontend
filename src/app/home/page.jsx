@@ -205,7 +205,7 @@ const Home = () => {
         )}
       </div>
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+        <div className="fixed pt-16 px-6 lg:pt-0 lg:px-0 md:my-0 mt-12 inset-0 bg-black/50 z-50 flex items-center justify-center overflow-y-auto">
           <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-5xl shadow-xl p-4 sm:p-6 relative">
             <button
               onClick={() => {

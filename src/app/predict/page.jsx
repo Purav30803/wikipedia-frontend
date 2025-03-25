@@ -18,7 +18,7 @@ const Predict = () => {
         setError(null);
         setLoading(true);
         if (!search) {
-            toast.error('Please enter a valid Wikipedia link');
+            setError('Please enter a valid Wikipedia link');
             setLoading(false);
             return;
         }
@@ -37,7 +37,7 @@ const Predict = () => {
             const engagementRes = await api.get(`/wikipedia/engagement-chart?wiki_url=${encodeURIComponent(search)}`);
             setEngagementData(engagementRes.data);
         } catch (error) {
-            toast.error('An error occurred. Please try again later.');
+            setError('An error occurred. Please try again later.');
             console.error(error);
         }
         setLoading(false);
