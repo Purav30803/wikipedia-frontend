@@ -24,6 +24,10 @@ export default function RootLayout({ children }) {
         />
         {/* favicon */}
         <link rel="icon" href="/logo.svg" />
+        <link rel="manifest" href="/manifest.json" type="application/manifest+json" />
+        <link rel="apple-touch-icon" href="/fav.png" />
+        <meta name="theme-color" content="#000000" />
+        <link rel="icon" href="/logo.svg" />
       </head>
       <body className="antialiased custom-cursor">
         <Toaster />
