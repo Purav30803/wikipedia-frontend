@@ -23,6 +23,7 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
         {/* favicon */}
+        <link rel="icon" href="/logo.svg" />
       </head>
       <body className="antialiased custom-cursor">
         <Toaster />
